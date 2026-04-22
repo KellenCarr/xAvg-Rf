@@ -1,0 +1,17 @@
+# ─────────────────────────────────────────────────────────────
+# harness.yaml — the config a non-technical user edits.
+# ─────────────────────────────────────────────────────────────
+
+# Folder where your blocks live. Relative paths are resolved
+# against this file's directory.
+blocks_dir: ./blocks
+
+# Which Claude model to use. See shared/models.md for the full list.
+model: claude-opus-4-7
+
+# Thinking mode: 'adaptive' (Claude decides how much to think)
+# or 'disabled' (faster/cheaper, no reasoning steps).
+thinking: adaptive
+
+# Ceiling on the model's response length (tokens).
+max_tokens: 16000
