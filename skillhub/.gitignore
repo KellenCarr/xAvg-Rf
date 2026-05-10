@@ -9,3 +9,7 @@ dist/
 
 # CLI local config (created by `skillhub login`)
 .skillhub/
+
+# Generated registry artifacts (rebuilt by `make seed` / API writes)
+registry/index.json
+registry/audit.log.jsonl
