@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Catalog &mdash; SkillHub{% endblock %}
+{% block body %}
+<div class="catalog">
+  <aside class="filters">
+    <form id="filter-form"
+          hx-get="/?partial=1"
+          hx-target="#catalog-table"
+          hx-trigger="change, keyup delay:300ms from:input[name=q]"
+          hx-push-url="true">
+      <h3>Filter</h3>
+      <label>Search<input type="text" name="q" value="{{ filters.q }}" placeholder="name or description"></label>
+
+      <fieldset>
+        <legend>Kind</legend>
+        <label><input type="radio" name="kind" value="" {% if not filters.kind %}checked{% endif %}> any</label>
+        <label><input type="radio" name="kind" value="skill" {% if filters.kind=="skill" %}checked{% endif %}> skill</label>
+        <label><input type="radio" name="kind" value="mcp_server" {% if filters.kind=="mcp_server" %}checked{% endif %}> mcp_server</label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Status</legend>
+        <label><input type="radio" name="status" value="" {% if not filters.status %}checked{% endif %}> any</label>
+        <label><input type="radio" name="status" value="approved" {% if filters.status=="approved" %}checked{% endif %}> approved</label>
+        <label><input type="radio" name="status" value="pending" {% if filters.status=="pending" %}checked{% endif %}> pending</label>
+        <label><input type="radio" name="status" value="rejected" {% if filters.status=="rejected" %}checked{% endif %}> rejected</label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Namespace</legend>
+        <label><input type="radio" name="namespace" value="" {% if not filters.namespace %}checked{% endif %}> any</label>
+        {% for ns, info in namespaces.items() %}
+          <label><input type="radio" name="namespace" value="{{ ns }}" {% if filters.namespace==ns %}checked{% endif %}> {{ ns }}</label>
+        {% endfor %}
+      </fieldset>
+
+      <fieldset>
+        <legend>Visibility</legend>
+        <label><input type="radio" name="visibility" value="" {% if not filters.visibility %}checked{% endif %}> any</label>
+        <label><input type="radio" name="visibility" value="private" {% if filters.visibility=="private" %}checked{% endif %}> private</label>
+        <label><input type="radio" name="visibility" value="public" {% if filters.visibility=="public" %}checked{% endif %}> public</label>
+      </fieldset>
+    </form>
+  </aside>
+
+  <section class="results">
+    <h2>{{ entries|length }} entries</h2>
+    <div id="catalog-table">
+      {% include "_catalog_table.html" %}
+    </div>
+  </section>
+</div>
+{% endblock %}

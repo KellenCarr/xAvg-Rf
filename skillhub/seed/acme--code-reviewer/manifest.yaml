@@ -1,0 +1,17 @@
+apiVersion: skillhub/v0
+kind: skill
+namespace: acme
+name: code-reviewer
+version: 0.2.0
+description: "Reviews diffs for style, security, and test coverage gaps."
+author: "platform-team@acme.example"
+status: approved
+reviewer: "alice@acme.example"
+permissions:
+  - read_files
+  - run_shell:git
+visibility: private
+signature: "UNSIGNED-PROTOTYPE"
+skill:
+  entrypoint: payload/SKILL.md
+  install_path: .claude/skills/{name}/

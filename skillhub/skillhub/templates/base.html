@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{% block title %}SkillHub{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="https://unpkg.com/htmx.org@1.9.12" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/">SkillHub</a>
+    <span class="tag">prototype</span>
+    <nav>
+      <a href="/">Catalog</a>
+      <a href="/submit">Submit</a>
+      {% if role == "admin" %}<a href="/admin">Admin</a>{% endif %}
+    </nav>
+    <div class="spacer"></div>
+    <div class="who">
+      role: <code>{{ role }}</code>
+      {% if role == "admin" %}
+        <a href="/logout">logout</a>
+      {% else %}
+        <a href="/login">login</a>
+      {% endif %}
+    </div>
+  </header>
+
+  <main>
+    {% block body %}{% endblock %}
+  </main>
+
+  <footer>
+    <small>SkillHub prototype &mdash; auth, signatures, and approvals are <strong>stubs</strong>. See README.</small>
+  </footer>
+</body>
+</html>

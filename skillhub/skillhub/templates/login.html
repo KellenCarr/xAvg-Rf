@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Login (stub) &mdash; SkillHub{% endblock %}
+{% block body %}
+<div class="login">
+  <h1>Login (stub)</h1>
+  <p class="muted">No real auth. Pick a role; we set a cookie. This is a prototype.</p>
+  <form method="post" action="/login">
+    <label><input type="radio" name="role" value="user" checked> user</label>
+    <label><input type="radio" name="role" value="admin"> admin</label>
+    <div><button class="btn-primary" type="submit">Set role</button></div>
+  </form>
+</div>
+{% endblock %}

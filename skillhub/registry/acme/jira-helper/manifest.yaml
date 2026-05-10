@@ -1,0 +1,18 @@
+apiVersion: skillhub/v0
+kind: skill
+namespace: acme
+name: jira-helper
+version: 1.0.1
+description: "Reads Jira tickets and creates branches/commits scoped to the issue."
+author: "platform-team@acme.example"
+status: approved
+reviewer: "alice@acme.example"
+permissions:
+  - read_files
+  - read_env:JIRA_TOKEN
+  - network:jira.acme.example
+visibility: private
+signature: "UNSIGNED-PROTOTYPE"
+skill:
+  entrypoint: payload/SKILL.md
+  install_path: .claude/skills/{name}/

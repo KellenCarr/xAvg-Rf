@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}{{ entry.namespace }}/{{ entry.name }} &mdash; SkillHub{% endblock %}
+{% block body %}
+<div class="detail">
+  <h1><code>{{ entry.namespace }}/{{ entry.name }}</code> <span class="badge badge-{{ entry.status }}">{{ entry.status }}</span></h1>
+  <p class="lead">{{ entry.description }}</p>
+
+  <div class="meta">
+    <div><strong>Kind</strong> <span class="kind kind-{{ entry.kind }}">{{ entry.kind }}</span></div>
+    <div><strong>Version</strong> <code>{{ entry.version }}</code></div>
+    <div><strong>Author</strong> <code>{{ entry.author }}</code></div>
+    <div><strong>Visibility</strong> {{ entry.visibility }}</div>
+    <div><strong>Reviewer</strong> <code>{{ entry.reviewer or "—" }}</code></div>
+    <div><strong>Signature</strong> <code>{{ entry.signature }}</code></div>
+  </div>
+
+  {% if high_risk %}
+  <div class="warning">
+    <strong>High-risk permissions declared.</strong>
+    Review carefully before installing into a production project.
+  </div>
+  {% endif %}
+
+  <h3>Permissions</h3>
+  <ul class="perms">
+    {% for p in entry.permissions %}<li><code>{{ p }}</code></li>{% endfor %}
+    {% if not entry.permissions %}<li class="muted">none declared</li>{% endif %}
+  </ul>
+
+  <h3>Install</h3>
+  <pre class="cmd">$ {{ install_cmd }}</pre>
+
+  {% if entry.kind == "mcp_server" %}
+  <h3>MCP server config (.mcp.json fragment)</h3>
+  <pre class="cmd">{
+  "mcpServers": {
+    "{{ entry.mcp_server.mcp_json_key }}": {
+      "command": {{ entry.mcp_server.command|tojson }},
+      "args": {{ entry.mcp_server.args|tojson }},
+      "env": {{ entry.mcp_server.env|tojson }}
+    }
+  }
+}</pre>
+  {% endif %}
+
+  {% if role == "admin" and entry.status == "pending" %}
+  <h3>Admin actions</h3>
+  <form method="post" action="/admin/{{ entry.namespace }}/{{ entry.name }}/approve" style="display:inline">
+    <button class="btn-approve">Approve</button>
+  </form>
+  <form method="post" action="/admin/{{ entry.namespace }}/{{ entry.name }}/reject" style="display:inline">
+    <button class="btn-reject">Reject</button>
+  </form>
+  {% endif %}
+
+  <h3>Audit (this entry)</h3>
+  <table class="audit">
+    <thead><tr><th>ts</th><th>actor</th><th>action</th><th>before</th><th>after</th></tr></thead>
+    <tbody>
+      {% for a in audit %}
+      <tr>
+        <td><code>{{ a.ts }}</code></td>
+        <td><code>{{ a.actor_role }}</code></td>
+        <td>{{ a.action }}</td>
+        <td>{{ a.before_status or "—" }}</td>
+        <td>{{ a.after_status or "—" }}</td>
+      </tr>
+      {% endfor %}
+      {% if not audit %}<tr><td colspan="5" class="empty">no audit entries</td></tr>{% endif %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

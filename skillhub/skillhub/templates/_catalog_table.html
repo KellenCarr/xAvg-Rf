@@ -1,0 +1,33 @@
+<table class="entries">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Kind</th>
+      <th>Version</th>
+      <th>Status</th>
+      <th>Visibility</th>
+      <th>Permissions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for e in entries %}
+    <tr>
+      <td>
+        <a href="/entries/{{ e.namespace }}/{{ e.name }}"><code>{{ e.namespace }}/{{ e.name }}</code></a>
+        <div class="muted">{{ e.description }}</div>
+      </td>
+      <td><span class="kind kind-{{ e.kind }}">{{ e.kind }}</span></td>
+      <td><code>{{ e.version }}</code></td>
+      <td><span class="badge badge-{{ e.status }}">{{ e.status }}</span></td>
+      <td>{{ e.visibility }}</td>
+      <td>
+        {% if e.high_risk %}<span class="risk">!</span>{% endif %}
+        {{ e.permissions|length }} declared
+      </td>
+    </tr>
+    {% endfor %}
+    {% if not entries %}
+    <tr><td colspan="6" class="empty">No entries match these filters.</td></tr>
+    {% endif %}
+  </tbody>
+</table>
