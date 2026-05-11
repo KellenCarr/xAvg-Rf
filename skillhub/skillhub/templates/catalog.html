@@ -1,52 +1,71 @@
 {% extends "base.html" %}
+{% set nav = "catalog" %}
 {% block title %}Catalog &mdash; SkillHub{% endblock %}
 {% block body %}
+
+<section class="hero">
+  <div>
+    <h1>Skills &amp; tools for agents</h1>
+    <p>A central registry your agents can discover, install, and run &mdash; with declared permissions and an audit trail.</p>
+  </div>
+  <div class="hero-cta">
+    <a class="btn btn-primary" href="/connect">Connect an agent</a>
+    <a class="btn btn-ghost" href="/submit">Submit a skill</a>
+  </div>
+</section>
+
 <div class="catalog">
   <aside class="filters">
-    <form id="filter-form"
-          hx-get="/?partial=1"
-          hx-target="#catalog-table"
-          hx-trigger="change, keyup delay:300ms from:input[name=q]"
-          hx-push-url="true">
-      <h3>Filter</h3>
-      <label>Search<input type="text" name="q" value="{{ filters.q }}" placeholder="name or description"></label>
+    <div class="card" style="padding: 16px 18px;">
+      <form id="filter-form"
+            hx-get="/?partial=1"
+            hx-target="#catalog-table"
+            hx-trigger="change, keyup delay:300ms from:input[name=q]"
+            hx-push-url="true">
+        <h3>Search</h3>
+        <input type="text" name="q" value="{{ filters.q }}" placeholder="name or description">
 
-      <fieldset>
-        <legend>Kind</legend>
-        <label><input type="radio" name="kind" value="" {% if not filters.kind %}checked{% endif %}> any</label>
-        <label><input type="radio" name="kind" value="skill" {% if filters.kind=="skill" %}checked{% endif %}> skill</label>
-        <label><input type="radio" name="kind" value="mcp_server" {% if filters.kind=="mcp_server" %}checked{% endif %}> mcp_server</label>
-      </fieldset>
+        <h3>Kind</h3>
+        <fieldset>
+          <label><input type="radio" name="kind" value="" {% if not filters.kind %}checked{% endif %}> Any</label>
+          <label><input type="radio" name="kind" value="skill" {% if filters.kind=="skill" %}checked{% endif %}> Skill</label>
+          <label><input type="radio" name="kind" value="mcp_server" {% if filters.kind=="mcp_server" %}checked{% endif %}> MCP server</label>
+        </fieldset>
 
-      <fieldset>
-        <legend>Status</legend>
-        <label><input type="radio" name="status" value="" {% if not filters.status %}checked{% endif %}> any</label>
-        <label><input type="radio" name="status" value="approved" {% if filters.status=="approved" %}checked{% endif %}> approved</label>
-        <label><input type="radio" name="status" value="pending" {% if filters.status=="pending" %}checked{% endif %}> pending</label>
-        <label><input type="radio" name="status" value="rejected" {% if filters.status=="rejected" %}checked{% endif %}> rejected</label>
-      </fieldset>
+        <h3>Status</h3>
+        <fieldset>
+          <label><input type="radio" name="status" value="" {% if not filters.status %}checked{% endif %}> Any</label>
+          <label><input type="radio" name="status" value="approved" {% if filters.status=="approved" %}checked{% endif %}> Approved</label>
+          <label><input type="radio" name="status" value="pending" {% if filters.status=="pending" %}checked{% endif %}> Pending</label>
+          <label><input type="radio" name="status" value="rejected" {% if filters.status=="rejected" %}checked{% endif %}> Rejected</label>
+        </fieldset>
 
-      <fieldset>
-        <legend>Namespace</legend>
-        <label><input type="radio" name="namespace" value="" {% if not filters.namespace %}checked{% endif %}> any</label>
-        {% for ns, info in namespaces.items() %}
-          <label><input type="radio" name="namespace" value="{{ ns }}" {% if filters.namespace==ns %}checked{% endif %}> {{ ns }}</label>
-        {% endfor %}
-      </fieldset>
+        <h3>Namespace</h3>
+        <fieldset>
+          <label><input type="radio" name="namespace" value="" {% if not filters.namespace %}checked{% endif %}> Any</label>
+          {% for ns, info in namespaces.items() %}
+            <label><input type="radio" name="namespace" value="{{ ns }}" {% if filters.namespace==ns %}checked{% endif %}> {{ ns }}</label>
+          {% endfor %}
+        </fieldset>
 
-      <fieldset>
-        <legend>Visibility</legend>
-        <label><input type="radio" name="visibility" value="" {% if not filters.visibility %}checked{% endif %}> any</label>
-        <label><input type="radio" name="visibility" value="private" {% if filters.visibility=="private" %}checked{% endif %}> private</label>
-        <label><input type="radio" name="visibility" value="public" {% if filters.visibility=="public" %}checked{% endif %}> public</label>
-      </fieldset>
-    </form>
+        <h3>Visibility</h3>
+        <fieldset>
+          <label><input type="radio" name="visibility" value="" {% if not filters.visibility %}checked{% endif %}> Any</label>
+          <label><input type="radio" name="visibility" value="private" {% if filters.visibility=="private" %}checked{% endif %}> Private</label>
+          <label><input type="radio" name="visibility" value="public" {% if filters.visibility=="public" %}checked{% endif %}> Public</label>
+        </fieldset>
+      </form>
+    </div>
   </aside>
 
-  <section class="results">
-    <h2>{{ entries|length }} entries</h2>
-    <div id="catalog-table">
-      {% include "_catalog_table.html" %}
+  <section>
+    <div class="card">
+      <div class="card-header">
+        <h2>{{ entries|length }} entries</h2>
+      </div>
+      <div class="card-body" id="catalog-table">
+        {% include "_catalog_table.html" %}
+      </div>
     </div>
   </section>
 </div>

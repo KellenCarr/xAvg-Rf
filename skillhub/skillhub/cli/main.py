@@ -35,8 +35,13 @@ def _save_config(d: dict) -> None:
 
 def _client() -> httpx.Client:
     cfg = _load_config()
-    base = cfg.get("registry_url", DEFAULT_REGISTRY_URL)
-    headers = {"X-Role": cfg.get("role", "user")}
+    base = os.environ.get("SKILLHUB_URL") or cfg.get("registry_url", DEFAULT_REGISTRY_URL)
+    headers: dict[str, str] = {}
+    token = os.environ.get("SKILLHUB_TOKEN") or cfg.get("connector_token")
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    else:
+        headers["X-Role"] = cfg.get("role", "user")
     return httpx.Client(base_url=base, headers=headers, timeout=20.0)
 
 
@@ -52,6 +57,34 @@ def _print_table(rows: list[dict], cols: list[tuple[str, str]]) -> None:
 
 
 @app.command()
+def connect(
+    token: str = typer.Argument(..., help="bearer token (skh_...) for a registered connector"),
+    registry_url: str = typer.Option(DEFAULT_REGISTRY_URL, "--registry-url", help="SkillHub base URL"),
+):
+    """Save a connector bearer token. Subsequent calls authenticate as the connector."""
+    if not token.startswith("skh_"):
+        typer.echo("token should start with 'skh_'", err=True)
+        raise typer.Exit(1)
+    cfg = _load_config()
+    cfg["connector_token"] = token
+    cfg["registry_url"] = registry_url
+    cfg.pop("role", None)
+    _save_config(cfg)
+    # Verify against the server.
+    try:
+        with _client() as c:
+            r = c.get("/api/connectors/me")
+            if r.status_code != 200:
+                typer.echo(f"server rejected token: {r.status_code} {r.text}", err=True)
+                raise typer.Exit(2)
+            me = r.json()
+    except httpx.HTTPError as e:
+        typer.echo(f"could not reach {registry_url}: {e}", err=True)
+        raise typer.Exit(2)
+    typer.echo(f"connected as '{me['name']}' (id={me['connector_id']}) scopes={me['scopes']}")
+
+
+@app.command()
 def login(
     role: str = typer.Option("user", help="user | admin"),
     registry_url: str = typer.Option(DEFAULT_REGISTRY_URL, help="registry base URL"),
@@ -60,14 +93,30 @@ def login(
     role = "admin" if role.lower() == "admin" else "user"
     cfg = _load_config()
     cfg.update({"role": role, "registry_url": registry_url})
+    cfg.pop("connector_token", None)
     _save_config(cfg)
     typer.echo(f"role={role} registry={registry_url} (stub auth)")
 
 
 @app.command()
 def whoami():
+    """Print local identity and what the server says about the current credentials."""
     cfg = _load_config()
-    typer.echo(json.dumps({"role": cfg.get("role", "user"), "registry_url": cfg.get("registry_url", DEFAULT_REGISTRY_URL)}, indent=2))
+    local = {
+        "registry_url": cfg.get("registry_url", DEFAULT_REGISTRY_URL),
+        "auth": "connector" if cfg.get("connector_token") else "role",
+        "role": cfg.get("role", "user"),
+    }
+    typer.echo("local: " + json.dumps(local))
+    try:
+        with _client() as c:
+            r = c.get("/api/whoami")
+            if r.status_code == 200:
+                typer.echo("server: " + json.dumps(r.json()))
+            else:
+                typer.echo(f"server: {r.status_code} {r.text}", err=True)
+    except httpx.HTTPError as e:
+        typer.echo(f"server: unreachable ({e})", err=True)
 
 
 @app.command()

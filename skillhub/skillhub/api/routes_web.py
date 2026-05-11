@@ -8,8 +8,8 @@ from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 
-from skillhub import storage
-from skillhub.governance import NAMESPACES, check_namespace_allowed, identity
+from skillhub import connectors, storage
+from skillhub.governance import NAMESPACES, check_namespace_allowed
 from skillhub.manifest import has_high_risk, manifest_to_dict, parse_manifest
 
 TEMPLATES = Jinja2Templates(directory=str(Path(__file__).resolve().parent.parent / "templates"))
@@ -18,11 +18,20 @@ TEMPLATES.env.globals["NAMESPACES"] = NAMESPACES
 router = APIRouter()
 
 
+def _human_role(request: Request) -> str:
+    """Read role from cookie/header/query without raising for missing bearer."""
+    role = (
+        request.headers.get("x-role")
+        or request.query_params.get("role")
+        or request.cookies.get("skillhub_role")
+        or "user"
+    ).lower()
+    return "admin" if role == "admin" else "user"
+
+
 def _ctx(request: Request, **kw):
-    ident = identity(request)
     base = {
-        "role": ident.role,
-        "actor": ident.actor,
+        "role": _human_role(request),
         "namespaces": NAMESPACES,
     }
     base.update(kw)
@@ -102,7 +111,7 @@ def submit_form(request: Request):
 
 @router.post("/submit", response_class=HTMLResponse)
 def submit_post(request: Request, manifest_yaml: str = Form(...)):
-    ident = identity(request)
+    role = _human_role(request)
     try:
         data = yaml.safe_load(manifest_yaml)
         m = parse_manifest(data)
@@ -118,7 +127,7 @@ def submit_post(request: Request, manifest_yaml: str = Form(...)):
     storage.append_audit(
         action="submit",
         target=f"{m.namespace}/{m.name}",
-        actor_role=ident.role,
+        actor_role=role,
         before=None,
         after="pending",
         extra={"version": m.version, "via": "web"},
@@ -128,8 +137,7 @@ def submit_post(request: Request, manifest_yaml: str = Form(...)):
 
 @router.get("/admin", response_class=HTMLResponse)
 def admin(request: Request):
-    ident = identity(request)
-    if ident.role != "admin":
+    if _human_role(request) != "admin":
         return _render(request, "admin.html", status_code=403, denied=True, pending=[], audit=[])
     idx = storage.read_index()
     pending = [e for e in idx["entries"] if e["status"] == "pending"]
@@ -139,14 +147,13 @@ def admin(request: Request):
 
 @router.post("/admin/{namespace}/{name}/{action}", response_class=HTMLResponse)
 def admin_action(request: Request, namespace: str, name: str, action: str):
-    ident = identity(request)
-    if ident.role != "admin":
+    if _human_role(request) != "admin":
         raise HTTPException(403, "admin required (stub)")
     if action not in ("approve", "reject"):
         raise HTTPException(400, "unknown action")
     new_status = "approved" if action == "approve" else "rejected"
-    storage.set_status(namespace, name, new_status, reviewer=ident.actor, actor_role=ident.role)
-    return RedirectResponse(url="/admin", status_code=303)
+    storage.set_status(namespace, name, new_status, reviewer="stub:admin", actor_role="admin")
+    return RedirectResponse(url="/admin?role=admin", status_code=303)
 
 
 @router.get("/login", response_class=HTMLResponse)
@@ -167,3 +174,75 @@ def logout():
     resp = RedirectResponse(url="/", status_code=303)
     resp.delete_cookie("skillhub_role")
     return resp
+
+
+# ---------- connector pages ----------
+
+
+@router.get("/connect", response_class=HTMLResponse)
+def connect_docs(request: Request):
+    """Public-facing 'How to connect an agent' page."""
+    base = str(request.base_url).rstrip("/")
+    return _render(request, "connect.html", base_url=base)
+
+
+@router.get("/connectors", response_class=HTMLResponse)
+def connectors_page(request: Request):
+    if _human_role(request) != "admin":
+        return _render(request, "connectors.html", status_code=403, denied=True, connectors=[], new_token=None)
+    conns = [c.public() for c in connectors.list_connectors()]
+    return _render(request, "connectors.html", denied=False, connectors=conns, new_token=None)
+
+
+@router.post("/connectors", response_class=HTMLResponse)
+def connectors_register(
+    request: Request,
+    name: str = Form(...),
+    read: Optional[str] = Form(default=None),
+    install: Optional[str] = Form(default=None),
+    submit_scope: Optional[str] = Form(default=None, alias="submit"),
+):
+    if _human_role(request) != "admin":
+        raise HTTPException(403, "admin required (stub)")
+    scopes = [s for s, on in (("read", read), ("install", install), ("submit", submit_scope)) if on]
+    if not scopes:
+        scopes = list(connectors.DEFAULT_SCOPES)
+    try:
+        conn, token = connectors.register(name=name, scopes=scopes, created_by=f"stub:admin")
+    except ValueError as e:
+        conns = [c.public() for c in connectors.list_connectors()]
+        return _render(request, "connectors.html", status_code=400, denied=False, connectors=conns, new_token=None, error=str(e))
+    storage.append_audit(
+        action="connector:register",
+        target=conn.id,
+        actor_role="admin",
+        before=None,
+        after="active",
+        extra={"name": conn.name, "scopes": conn.scopes, "via": "web"},
+    )
+    conns = [c.public() for c in connectors.list_connectors()]
+    return _render(
+        request,
+        "connectors.html",
+        denied=False,
+        connectors=conns,
+        new_token={"token": token, "name": conn.name, "id": conn.id, "scopes": conn.scopes},
+    )
+
+
+@router.post("/connectors/{connector_id}/revoke", response_class=HTMLResponse)
+def connectors_revoke_page(connector_id: str, request: Request):
+    if _human_role(request) != "admin":
+        raise HTTPException(403, "admin required (stub)")
+    c = connectors.revoke(connector_id)
+    if c is None:
+        raise HTTPException(404, "connector not found")
+    storage.append_audit(
+        action="connector:revoke",
+        target=c.id,
+        actor_role="admin",
+        before="active",
+        after="revoked",
+        extra={"name": c.name, "via": "web"},
+    )
+    return RedirectResponse(url="/connectors?role=admin", status_code=303)

@@ -21,9 +21,12 @@ make run           # uvicorn on :8765
 Then:
 
 - Browse the catalog: <http://localhost:8765/>
+- Connect an agent: <http://localhost:8765/connect>
+- Discovery doc: <http://localhost:8765/.well-known/skillhub.json>
 - Become admin: <http://localhost:8765/?role=admin> (or `skillhub login --role admin`)
 - Submit a manifest: <http://localhost:8765/submit>
 - Approve pending entries: <http://localhost:8765/admin?role=admin>
+- Manage agent tokens: <http://localhost:8765/connectors?role=admin>
 
 CLI demo (in another terminal):
 
@@ -36,6 +39,24 @@ skillhub add platform/filesystem-mcp --project ./sample-project --yes
 ls sample-project/.claude/skills/code-reviewer/   # SKILL.md
 cat sample-project/.mcp.json                       # mcpServers.filesystem
 ```
+
+## Connecting an agent
+
+SkillHub speaks a small, stable JSON contract so any agent harness can use it.
+
+1. **Discover**: `curl http://localhost:8765/.well-known/skillhub.json` — server
+   advertises base URL, auth scheme, scopes, and endpoint paths.
+2. **Register**: an admin visits `/connectors?role=admin`, picks a name and scopes
+   (`read`, `install`, `submit`), and gets back a token (`skh_…`) shown once.
+3. **Connect**: the agent sends `Authorization: Bearer skh_…` on every API call,
+   or runs `skillhub connect <token>` which writes the token to `~/.skillhub/config.json`.
+4. **Crawl**: `GET /api/entries`, `GET /api/entries/{ns}/{name}`, `GET /api/entries/{ns}/{name}/payload`.
+   Each call updates the connector's `last_seen_at` (visible to admins).
+5. **(Optional) Submit back**: agents with the `submit` scope can `POST /api/entries`.
+   Submissions land as `pending` until an admin approves.
+
+Tokens are hashed (sha256) at rest; only the prefix is stored alongside metadata.
+Revoke at any time from `/connectors?role=admin` or via `POST /api/connectors/{id}/revoke`.
 
 End-to-end check: `bash scripts/verify.sh` (runs against the running server).
 
@@ -108,16 +129,20 @@ mcp_server:
 ## CLI reference
 
 ```text
-skillhub login --role user|admin [--registry-url URL]
-skillhub whoami
+skillhub login --role user|admin [--registry-url URL]   # human stub login
+skillhub connect <token> [--registry-url URL]           # connector (agent) login
+skillhub whoami                                         # local + server identity
 skillhub search [QUERY] [--kind skill|mcp_server] [--namespace NS] [--status STATUS]
 skillhub info <namespace>/<name>
 skillhub add  <namespace>/<name> --project PATH [--yes] [--allow-unapproved]
 skillhub submit <manifest.yaml> [--payload <file>]
-skillhub approve <namespace>/<name>     # admin
-skillhub reject  <namespace>/<name>     # admin
-skillhub audit [--limit 50]             # admin
+skillhub approve <namespace>/<name>                     # admin
+skillhub reject  <namespace>/<name>                     # admin
+skillhub audit [--limit 50]                             # admin
 ```
+
+Env vars `SKILLHUB_URL` and `SKILLHUB_TOKEN` override `~/.skillhub/config.json`
+— useful for agents that don't want a config file on disk.
 
 `add` is the load-bearing command. For `kind=skill` it downloads `payload/`
 and untars into `<project>/.claude/skills/<name>/`. For `kind=mcp_server` it
@@ -126,17 +151,27 @@ merges into `<project>/.mcp.json` under `mcpServers[mcp_json_key]`. It
 
 ## API reference
 
-| Method | Path | Purpose |
-|---|---|---|
-| GET | `/api/health` | health |
-| GET | `/api/whoami` | echo role |
-| GET | `/api/entries` | list/search; `?q&kind&status&namespace&visibility` |
-| GET | `/api/entries/{ns}/{name}` | full manifest |
-| GET | `/api/entries/{ns}/{name}/payload` | tar.gz of `payload/` |
-| POST | `/api/entries` | submit (force `pending`) |
-| POST | `/api/entries/{ns}/{name}/approve` | admin |
-| POST | `/api/entries/{ns}/{name}/reject` | admin |
-| GET | `/api/audit` | tail audit log (admin) |
+All `/api/*` endpoints accept either a connector bearer token
+(`Authorization: Bearer skh_…`) or a human role header (`X-Role: admin` /
+`?role=admin` / `skillhub_role` cookie).
+
+| Method | Path | Auth / Scope | Purpose |
+|---|---|---|---|
+| GET | `/.well-known/skillhub.json` | none | discovery doc (service info, endpoints, scopes) |
+| GET | `/api/health` | none | health |
+| GET | `/api/whoami` | any | echo identity (human or connector) |
+| GET | `/api/namespaces` | any | static namespace registry |
+| GET | `/api/entries` | `read` | list/search; `?q&kind&status&namespace&visibility` |
+| GET | `/api/entries/{ns}/{name}` | `read` | full manifest |
+| GET | `/api/entries/{ns}/{name}/payload` | `install` | tar.gz of `payload/` |
+| POST | `/api/entries` | `submit` | submit (force `pending`) |
+| POST | `/api/entries/{ns}/{name}/approve` | admin | admin only |
+| POST | `/api/entries/{ns}/{name}/reject` | admin | admin only |
+| GET | `/api/audit` | admin | tail audit log |
+| POST | `/api/connectors` | admin | register new connector; returns token once |
+| GET | `/api/connectors` | admin | list connectors (no plaintext tokens) |
+| POST | `/api/connectors/{id}/revoke` | admin | revoke a connector |
+| GET | `/api/connectors/me` | bearer | identity for the current connector token |
 
 ## Governance demo features
 

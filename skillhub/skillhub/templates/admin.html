@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% set nav = "admin" %}
 {% block title %}Admin &mdash; SkillHub{% endblock %}
 {% block body %}
 <div class="admin">
@@ -6,47 +7,55 @@
   {% if denied %}
     <div class="error">Admin role required. Append <code>?role=admin</code> to the URL or <a href="/login">log in</a> as admin.</div>
   {% else %}
-  <h2>Pending submissions ({{ pending|length }})</h2>
-  <table class="entries">
-    <thead><tr><th>Entry</th><th>Kind</th><th>Author</th><th>Permissions</th><th></th></tr></thead>
-    <tbody>
-      {% for e in pending %}
-      <tr>
-        <td><a href="/entries/{{ e.namespace }}/{{ e.name }}"><code>{{ e.namespace }}/{{ e.name }}</code></a></td>
-        <td><span class="kind kind-{{ e.kind }}">{{ e.kind }}</span></td>
-        <td><code>{{ e.author }}</code></td>
-        <td>{{ e.permissions|length }} declared</td>
-        <td>
-          <form method="post" action="/admin/{{ e.namespace }}/{{ e.name }}/approve" style="display:inline">
-            <button class="btn-approve">Approve</button>
-          </form>
-          <form method="post" action="/admin/{{ e.namespace }}/{{ e.name }}/reject" style="display:inline">
-            <button class="btn-reject">Reject</button>
-          </form>
-        </td>
-      </tr>
-      {% endfor %}
-      {% if not pending %}<tr><td colspan="5" class="empty">No pending submissions.</td></tr>{% endif %}
-    </tbody>
-  </table>
 
-  <h2>Recent audit</h2>
-  <table class="audit">
-    <thead><tr><th>ts</th><th>actor</th><th>action</th><th>target</th><th>before</th><th>after</th></tr></thead>
-    <tbody>
-      {% for a in audit %}
-      <tr>
-        <td><code>{{ a.ts }}</code></td>
-        <td><code>{{ a.actor_role }}</code></td>
-        <td>{{ a.action }}</td>
-        <td><code>{{ a.target }}</code></td>
-        <td>{{ a.before_status or "—" }}</td>
-        <td>{{ a.after_status or "—" }}</td>
-      </tr>
-      {% endfor %}
-      {% if not audit %}<tr><td colspan="6" class="empty">no audit entries yet</td></tr>{% endif %}
-    </tbody>
-  </table>
+  <div class="card">
+    <div class="card-header"><h2>Pending submissions ({{ pending|length }})</h2></div>
+    <div class="card-body">
+      <table class="entries">
+        <thead><tr><th>Entry</th><th>Kind</th><th>Author</th><th>Permissions</th><th></th></tr></thead>
+        <tbody>
+          {% for e in pending %}
+          <tr>
+            <td><a class="entry-id" href="/entries/{{ e.namespace }}/{{ e.name }}"><span class="ns">{{ e.namespace }}/</span>{{ e.name }}</a></td>
+            <td><span class="kind kind-{{ e.kind }}">{{ e.kind }}</span></td>
+            <td class="mono">{{ e.author }}</td>
+            <td>{{ e.permissions|length }} declared</td>
+            <td>
+              <div class="btn-row">
+                <form method="post" action="/admin/{{ e.namespace }}/{{ e.name }}/approve"><button class="btn-approve btn-sm">Approve</button></form>
+                <form method="post" action="/admin/{{ e.namespace }}/{{ e.name }}/reject"><button class="btn-reject btn-sm">Reject</button></form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+          {% if not pending %}<tr><td colspan="5" class="empty">No pending submissions.</td></tr>{% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:18px">
+    <div class="card-header"><h2>Recent audit</h2></div>
+    <div class="card-body">
+      <table class="audit">
+        <thead><tr><th>ts</th><th>actor</th><th>action</th><th>target</th><th>before</th><th>after</th></tr></thead>
+        <tbody>
+          {% for a in audit %}
+          <tr>
+            <td class="mono">{{ a.ts }}</td>
+            <td class="mono">{{ a.actor_role }}</td>
+            <td>{{ a.action }}</td>
+            <td class="mono">{{ a.target }}</td>
+            <td>{{ a.before_status or "—" }}</td>
+            <td>{{ a.after_status or "—" }}</td>
+          </tr>
+          {% endfor %}
+          {% if not audit %}<tr><td colspan="6" class="empty">no audit entries yet</td></tr>{% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
   {% endif %}
 </div>
 {% endblock %}

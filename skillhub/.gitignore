@@ -13,3 +13,4 @@ dist/
 # Generated registry artifacts (rebuilt by `make seed` / API writes)
 registry/index.json
 registry/audit.log.jsonl
+registry/.connectors.json

@@ -13,15 +13,15 @@
     {% for e in entries %}
     <tr>
       <td>
-        <a href="/entries/{{ e.namespace }}/{{ e.name }}"><code>{{ e.namespace }}/{{ e.name }}</code></a>
+        <a class="entry-id" href="/entries/{{ e.namespace }}/{{ e.name }}"><span class="ns">{{ e.namespace }}/</span>{{ e.name }}</a>
         <div class="muted">{{ e.description }}</div>
       </td>
       <td><span class="kind kind-{{ e.kind }}">{{ e.kind }}</span></td>
-      <td><code>{{ e.version }}</code></td>
+      <td class="mono">{{ e.version }}</td>
       <td><span class="badge badge-{{ e.status }}">{{ e.status }}</span></td>
       <td>{{ e.visibility }}</td>
       <td>
-        {% if e.high_risk %}<span class="risk">!</span>{% endif %}
+        {% if e.high_risk %}<span class="risk" title="high-risk permissions declared">!</span>{% endif %}
         {{ e.permissions|length }} declared
       </td>
     </tr>
