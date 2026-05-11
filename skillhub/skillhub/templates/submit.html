@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% set nav = "submit" %}
+{% block title %}Submit &mdash; SkillHub{% endblock %}
+{% block body %}
+<div class="submit">
+  <h1>Submit a manifest</h1>
+  <p class="lead">
+    Paste a YAML manifest. Submissions are stored with <code>status=pending</code>
+    until an admin approves them. The namespace must be in the registry's allowlist.
+  </p>
+  {% if error %}<div class="error">{{ error }}</div>{% endif %}
+
+  <div class="card" style="padding: 18px;">
+    <form method="post" action="/submit">
+      <div class="form-row">
+        <label for="manifest_yaml">Manifest (YAML)</label>
+        <textarea id="manifest_yaml" name="manifest_yaml" rows="20"
+                  placeholder="apiVersion: skillhub/v0&#10;kind: skill&#10;namespace: community&#10;name: my-skill&#10;...">{{ prefill }}</textarea>
+      </div>
+      <button class="btn-primary" type="submit">Submit</button>
+    </form>
+  </div>
+
+  <h2>Example (skill)</h2>
+  <pre class="snippet">apiVersion: skillhub/v0
+kind: skill
+namespace: community
+name: hello-world
+version: 0.1.0
+description: "Says hi."
+author: "you@example.com"
+permissions: []
+visibility: public
+skill:
+  entrypoint: payload/SKILL.md
+  install_path: .claude/skills/{name}/</pre>
+</div>
+{% endblock %}

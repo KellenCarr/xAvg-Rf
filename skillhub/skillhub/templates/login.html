@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Login (stub) &mdash; SkillHub{% endblock %}
+{% block body %}
+<div class="login">
+  <h1>Login</h1>
+  <p class="lead">No real auth. Pick a role for the demo &mdash; cookie is set in your browser. (Production would use SSO.)</p>
+  <div class="card" style="padding:18px; max-width: 420px;">
+    <form method="post" action="/login">
+      <div class="form-row">
+        <label>Role</label>
+        <div class="scope-row">
+          <label><input type="radio" name="role" value="user" checked> User</label>
+          <label><input type="radio" name="role" value="admin"> Admin</label>
+        </div>
+      </div>
+      <button class="btn-primary" type="submit">Set role</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

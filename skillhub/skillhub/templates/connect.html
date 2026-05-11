@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% set nav = "connect" %}
+{% block title %}Connect an agent &mdash; SkillHub{% endblock %}
+{% block body %}
+<h1>Connect an agent</h1>
+<p class="lead">
+  SkillHub speaks a small, stable JSON contract. Point any agent harness at this server, present a bearer token,
+  and your agent can discover, install, and submit skills under its assigned scopes.
+</p>
+
+<ol class="steps">
+  <li>
+    <div class="step-title">Discover the server</div>
+    <div class="step-desc">Every SkillHub server publishes a discovery doc with its endpoints, supported auth schemes, and scopes.</div>
+<pre class="cmd"><span class="cmd-prompt">$</span> curl {{ base_url }}/.well-known/skillhub.json</pre>
+  </li>
+
+  <li>
+    <div class="step-title">Get a connector token</div>
+    <div class="step-desc">Ask an admin to register your agent at <a href="/connectors?role=admin">/connectors</a>. They pick a name and scopes (<code class="scope-chip">read</code> <code class="scope-chip">install</code> <code class="scope-chip">submit</code>), and the server returns a token <strong>once</strong>.</div>
+<pre class="snippet">SKILLHUB_TOKEN=skh_xxxxxxxxxxxxxxxxxxxxxxxxxxxx</pre>
+  </li>
+
+  <li>
+    <div class="step-title">Confirm the connection</div>
+    <div class="step-desc">The agent calls <code>/api/connectors/me</code> with its token. The server validates the token, records <code>last_seen_at</code>, and returns the connector's identity and scopes.</div>
+<pre class="cmd"><span class="cmd-prompt">$</span> curl -H "Authorization: Bearer $SKILLHUB_TOKEN" {{ base_url }}/api/connectors/me</pre>
+  </li>
+
+  <li>
+    <div class="step-title">Crawl the library</div>
+    <div class="step-desc">List entries, fetch manifests, and pull payloads. All <code>/api/*</code> endpoints accept the same bearer token; scope is enforced per endpoint.</div>
+<pre class="cmd"><span class="cmd-prompt">$</span> curl -H "Authorization: Bearer $SKILLHUB_TOKEN" \
+    "{{ base_url }}/api/entries?kind=skill&amp;status=approved"
+
+<span class="cmd-prompt">$</span> curl -H "Authorization: Bearer $SKILLHUB_TOKEN" \
+    {{ base_url }}/api/entries/acme/code-reviewer
+
+<span class="cmd-prompt">$</span> curl -H "Authorization: Bearer $SKILLHUB_TOKEN" -o code-reviewer.tar.gz \
+    {{ base_url }}/api/entries/acme/code-reviewer/payload</pre>
+  </li>
+
+  <li>
+    <div class="step-title">(Optional) submit findings back</div>
+    <div class="step-desc">Agents with the <code class="scope-chip">submit</code> scope can publish new manifests. The submission lands as <code>status=pending</code> and waits for admin approval.</div>
+<pre class="cmd"><span class="cmd-prompt">$</span> curl -H "Authorization: Bearer $SKILLHUB_TOKEN" \
+    -F manifest_yaml=@manifest.yaml \
+    {{ base_url }}/api/entries</pre>
+  </li>
+</ol>
+
+<h2>Discovery document</h2>
+<p>This is the contract your agent should rely on. URLs and the manifest shape are stable within <code>skillhub/v0</code>.</p>
+<pre class="snippet">GET /.well-known/skillhub.json
+
+{
+  "service": "skillhub",
+  "version": "0.1.0",
+  "spec": "skillhub/v0",
+  "base_url": "{{ base_url }}",
+  "auth": { "schemes": ["bearer"], "bearer": {"header": "Authorization", "prefix": "Bearer "} },
+  "scopes": ["read", "install", "submit"],
+  "endpoints": { ... },
+  "kinds": ["skill", "mcp_server"]
+}</pre>
+{% endblock %}

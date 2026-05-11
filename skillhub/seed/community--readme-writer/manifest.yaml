@@ -1,0 +1,16 @@
+apiVersion: skillhub/v0
+kind: skill
+namespace: community
+name: readme-writer
+version: 0.1.0
+description: "Generates and improves project README.md files based on the repository structure."
+author: "external-contrib@example.com"
+status: pending
+reviewer: null
+permissions:
+  - read_files
+visibility: public
+signature: "UNSIGNED-PROTOTYPE"
+skill:
+  entrypoint: payload/SKILL.md
+  install_path: .claude/skills/{name}/

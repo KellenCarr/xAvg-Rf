@@ -1,0 +1,4 @@
+allowed_namespaces:
+  - acme
+  - platform
+  - community

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% set nav = "connectors" %}
+{% block title %}Connectors &mdash; SkillHub{% endblock %}
+{% block body %}
+<h1>Connectors</h1>
+<p class="lead">Issue and revoke bearer tokens that let agents call the SkillHub API.</p>
+
+{% if denied %}
+  <div class="error">Admin role required. Append <code>?role=admin</code> to the URL or <a href="/login">log in</a> as admin.</div>
+{% else %}
+
+  {% if new_token %}
+  <div class="token-box">
+    <strong>New connector token for &lsquo;{{ new_token.name }}&rsquo;</strong>
+    <div class="muted" style="margin-top:4px; color: var(--text-muted);">
+      ID <code class="mono">{{ new_token.id }}</code>
+      &middot; scopes
+      {% for s in new_token.scopes %}<span class="scope-chip">{{ s }}</span>{% endfor %}
+    </div>
+    <div class="token-value">
+      <code class="mono">{{ new_token.token }}</code>
+    </div>
+    <div class="warning-text">Copy this now &mdash; the plaintext token will never be shown again. Hand it to the agent's environment as <code>SKILLHUB_TOKEN</code> (or equivalent).</div>
+  </div>
+  {% endif %}
+
+  {% if error %}<div class="error">{{ error }}</div>{% endif %}
+
+  <div class="card">
+    <div class="card-header"><h2>Register a new connector</h2></div>
+    <div class="card-body padded">
+      <form method="post" action="/connectors">
+        <div class="form-row">
+          <label>Name</label>
+          <input type="text" name="name" placeholder="acme-prod-coder, ci-bot, ..." required style="max-width:360px">
+        </div>
+        <div class="form-row">
+          <label>Scopes</label>
+          <div class="scope-row">
+            <label><input type="checkbox" name="read" value="1" checked> read</label>
+            <label><input type="checkbox" name="install" value="1" checked> install</label>
+            <label><input type="checkbox" name="submit" value="1"> submit</label>
+          </div>
+        </div>
+        <button class="btn-primary" type="submit">Register connector</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: 18px;">
+    <div class="card-header"><h2>Registered connectors ({{ connectors|length }})</h2></div>
+    <div class="card-body">
+      <table class="entries">
+        <thead>
+          <tr><th>Name</th><th>ID</th><th>Scopes</th><th>Status</th><th>Last seen</th><th>Created</th><th></th></tr>
+        </thead>
+        <tbody>
+          {% for c in connectors %}
+          <tr>
+            <td><strong>{{ c.name }}</strong><div class="muted">prefix <code>{{ c.token_prefix }}…</code></div></td>
+            <td class="mono">{{ c.id }}</td>
+            <td>
+              {% for s in c.scopes %}<span class="scope-chip">{{ s }}</span>{% endfor %}
+            </td>
+            <td><span class="badge badge-{{ c.status }}">{{ c.status }}</span></td>
+            <td class="mono">{{ c.last_seen_at or "—" }}</td>
+            <td class="mono">{{ c.created_at }}</td>
+            <td>
+              {% if c.status == "active" %}
+              <form method="post" action="/connectors/{{ c.id }}/revoke">
+                <button class="btn-reject btn-sm">Revoke</button>
+              </form>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+          {% if not connectors %}<tr><td colspan="7" class="empty">No connectors registered yet.</td></tr>{% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+{% endif %}
+{% endblock %}

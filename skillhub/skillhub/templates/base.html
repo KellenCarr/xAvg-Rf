@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}SkillHub{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="https://unpkg.com/htmx.org@1.9.12" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/"><span class="logo-dot"></span>SkillHub</a>
+    <span class="tag">prototype</span>
+    <nav>
+      <a href="/" {% if nav == 'catalog' %}class="active"{% endif %}>Catalog</a>
+      <a href="/connect" {% if nav == 'connect' %}class="active"{% endif %}>Connect</a>
+      <a href="/submit" {% if nav == 'submit' %}class="active"{% endif %}>Submit</a>
+      {% if role == "admin" %}
+        <a href="/admin" {% if nav == 'admin' %}class="active"{% endif %}>Admin</a>
+        <a href="/connectors" {% if nav == 'connectors' %}class="active"{% endif %}>Connectors</a>
+      {% endif %}
+    </nav>
+    <div class="spacer"></div>
+    <div class="who">
+      <span class="role-pill">{{ role }}</span>
+      {% if role == "admin" %}
+        <a href="/logout">logout</a>
+      {% else %}
+        <a href="/login">login</a>
+      {% endif %}
+    </div>
+  </header>
+
+  <main>
+    {% block body %}{% endblock %}
+  </main>
+
+  <footer>
+    SkillHub prototype &middot; auth, signatures, and approvals are <strong>stubs</strong> &middot;
+    <a href="/.well-known/skillhub.json">discovery</a>
+  </footer>
+</body>
+</html>
