@@ -1,0 +1,92 @@
+[
+  {
+    "id": "the-end-up",
+    "name": "The End Up",
+    "city": "San Francisco",
+    "neighborhood": "SoMa",
+    "lat": 37.7706,
+    "lon": -122.4083,
+    "tv_count": 18,
+    "carriers": ["DirecTV", "Xfinity", "ESPN+", "MLB.tv"],
+    "team_affiliations": ["Buffalo Bills", "San Francisco Giants"],
+    "sports": ["NFL", "MLB", "Rugby", "Premier League"],
+    "events": [
+      {"title": "Bills Mafia Watch Party", "league": "NFL", "recurring": "Sunday"},
+      {"title": "Six Nations Mornings", "league": "Rugby", "recurring": "Saturday"}
+    ]
+  },
+  {
+    "id": "pilsner-inn",
+    "name": "Pilsner Inn",
+    "city": "San Francisco",
+    "neighborhood": "Castro",
+    "lat": 37.7649,
+    "lon": -122.4309,
+    "tv_count": 8,
+    "carriers": ["Xfinity", "ESPN+"],
+    "team_affiliations": ["San Francisco 49ers"],
+    "sports": ["NFL", "NBA", "MLS"],
+    "events": [
+      {"title": "Niners Faithful", "league": "NFL", "recurring": "Sunday"}
+    ]
+  },
+  {
+    "id": "danny-coyles",
+    "name": "Danny Coyle's",
+    "city": "San Francisco",
+    "neighborhood": "Lower Haight",
+    "lat": 37.7715,
+    "lon": -122.4332,
+    "tv_count": 10,
+    "carriers": ["DirecTV", "Peacock"],
+    "team_affiliations": ["Buffalo Bills", "Liverpool FC"],
+    "sports": ["NFL", "Premier League", "Rugby", "Gaelic Football"],
+    "events": [
+      {"title": "Bills Backers SF", "league": "NFL", "recurring": "Sunday"},
+      {"title": "Rugby Union Saturdays", "league": "Rugby", "recurring": "Saturday"}
+    ]
+  },
+  {
+    "id": "kezar-pub",
+    "name": "Kezar Pub",
+    "city": "San Francisco",
+    "neighborhood": "Cole Valley",
+    "lat": 37.7669,
+    "lon": -122.4527,
+    "tv_count": 14,
+    "carriers": ["DirecTV", "Xfinity", "ESPN+", "Premier Sports"],
+    "team_affiliations": ["Manchester United", "San Francisco Giants"],
+    "sports": ["Premier League", "Rugby", "MLB", "NFL", "Champions League"],
+    "events": [
+      {"title": "Premier League Breakfast", "league": "Premier League", "recurring": "Saturday"}
+    ]
+  },
+  {
+    "id": "the-page",
+    "name": "The Page",
+    "city": "San Francisco",
+    "neighborhood": "Lower Haight",
+    "lat": 37.7723,
+    "lon": -122.4302,
+    "tv_count": 6,
+    "carriers": ["Xfinity"],
+    "team_affiliations": ["Golden State Warriors"],
+    "sports": ["NBA", "NFL"],
+    "events": []
+  },
+  {
+    "id": "buffalo-wild-oakland",
+    "name": "Buffalo Bills Backers - Oakland",
+    "city": "Oakland",
+    "neighborhood": "Downtown",
+    "lat": 37.8044,
+    "lon": -122.2712,
+    "tv_count": 22,
+    "carriers": ["DirecTV", "MLB.tv", "ESPN+", "NFL Sunday Ticket"],
+    "team_affiliations": ["Buffalo Bills"],
+    "sports": ["NFL", "MLB", "NHL", "Rugby"],
+    "events": [
+      {"title": "Bills Mafia East Bay", "league": "NFL", "recurring": "Sunday"}
+    ]
+  }
+]
