@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0f17" />
+  <title>On Tap — Sports Bar Finder</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-bar">
+    <div class="brand">🍻 <span>On Tap</span></div>
+    <button id="nearBtn" class="near-btn" aria-label="Set location">📍 <span id="nearLabel">Anywhere</span></button>
+  </header>
+
+  <!-- Smart search: type "bills rugby" and it filters by team + sport at once -->
+  <div class="search-wrap">
+    <div class="search-box">
+      <span class="search-icon">🔎</span>
+      <input id="search" type="search" inputmode="search" autocomplete="off"
+             placeholder="Try “Bills bar with rugby” or “DirecTV near me”" />
+      <button id="clearSearch" class="clear-x" aria-label="Clear" hidden>✕</button>
+    </div>
+  </div>
+
+  <!-- Quick chips: fast taps for the most common refinements -->
+  <div class="quick-row" id="quickRow"></div>
+
+  <!-- Active filters as removable pills -->
+  <div class="active-row" id="activeRow"></div>
+
+  <div class="results-head">
+    <span id="resultCount">—</span>
+    <button id="filterBtn" class="filter-btn">⚙︎ Filters<span id="filterCount" class="badge" hidden></span></button>
+  </div>
+
+  <main id="results" class="results"></main>
+
+  <!-- Slide-up filter sheet -->
+  <div id="sheetScrim" class="scrim" hidden></div>
+  <section id="sheet" class="sheet" hidden aria-label="Filters">
+    <div class="sheet-handle"></div>
+    <div class="sheet-head">
+      <h2>Filters</h2>
+      <button id="resetFilters" class="link-btn">Reset</button>
+    </div>
+    <div class="sheet-body" id="sheetBody"></div>
+    <div class="sheet-foot">
+      <button id="applyFilters" class="primary-btn">Show <span id="applyCount">results</span></button>
+    </div>
+  </section>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
