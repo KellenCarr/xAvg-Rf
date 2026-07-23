@@ -7,7 +7,7 @@ charset-normalizer==3.4.1
 click==8.1.8
 colorama==0.4.6
 gitdb==4.0.12
-GitPython==3.1.44
+GitPython==3.1.50
 idna==3.10
 Jinja2==3.1.5
 joblib==1.4.2
@@ -20,9 +20,9 @@ narwhals==1.25.2
 numpy==2.2.2
 packaging==24.2
 pandas==2.2.3
-pillow==11.1.0
-protobuf==5.29.3
-pyarrow==19.0.0
+pillow==12.3.0
+protobuf==5.29.6
+pyarrow==23.0.1
 pydeck==0.9.1
 Pygments==2.19.1
 python-dateutil==2.9.0.post0
@@ -35,12 +35,12 @@ scikit-learn==1.6.1
 scipy==1.15.1
 six==1.17.0
 smmap==5.0.2
-streamlit==1.42.0
+streamlit==1.60.0
 tenacity==9.0.0
 threadpoolctl==3.5.0
 toml==0.10.2
 tornado==6.4.2
 typing_extensions==4.12.2
 tzdata==2025.1
-urllib3==2.3.0
+urllib3==2.7.0
 watchdog==6.0.0
